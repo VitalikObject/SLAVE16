@@ -1,6 +1,6 @@
 #include "REPL.h"
 
 int main (void) {
-	REPL repl;
+    REPL repl;
     repl.run();
 }

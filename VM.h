@@ -8,19 +8,19 @@
 
 class VM {
 private:
-	Registers m_registers;
+    Registers m_registers;
     uint32_t m_pc {};
     std::unordered_map<InstructionOpcode, std::function<void(const std::vector<InstructionArg>& operands)>> m_dispatch;
     std::stack<uint32_t> m_program_stack;
 public:
-	VM();
+    VM();
     void execute(const Instruction& instr);
 private:
     void step();
 
-	void exec_MOV(const std::vector<InstructionArg>& operands);
-	void exec_ADD(const std::vector<InstructionArg>& operands);
-	void exec_SUB(const std::vector<InstructionArg>& operands); 
+    void exec_MOV(const std::vector<InstructionArg>& operands);
+    void exec_ADD(const std::vector<InstructionArg>& operands);
+    void exec_SUB(const std::vector<InstructionArg>& operands); 
     void exec_MUL(const std::vector<InstructionArg>& operands);
     void exec_DIV(const std::vector<InstructionArg>& operands);
     void exec_XOR(const std::vector<InstructionArg>& operands);

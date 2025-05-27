@@ -9,12 +9,12 @@ Instruction REPL::fetch_decode(const std::string& line) {
 	instr.opcode = str_to_opcode(op);
 
 	std::string token;
-	while (iss >> token) {
-		if (token.back() == ',')
-			token.pop_back();
+    while (iss >> token) {
+        if (token.back() == ',')
+            token.pop_back();
 
         RegisterOpcode reg_op = str_to_register_opcode(token);
-		if (reg_op != RegisterOpcode::INVALID_REG) {
+        if (reg_op != RegisterOpcode::INVALID_REG) {
             instr.operands.push_back(reg_op);
         } else if (ParseUtils::is_int(token)) {
             instr.operands.push_back(ParseUtils::string_to_int(token));
@@ -23,18 +23,18 @@ Instruction REPL::fetch_decode(const std::string& line) {
         } else {
             throw std::invalid_argument("Unknown type of operand: " + token);
         }
-	}
+    }
 
 	return instr;
 };
 
 void REPL::run() {
-	std::string line;
-	while (!m_is_halted && getline(std::cin, line)) {
-		if(line.empty()) continue;
-		auto instr = fetch_decode(line);
-		m_vm.execute(instr);
-	}
+    std::string line;
+    while (!m_is_halted && getline(std::cin, line)) {
+	    if(line.empty()) continue;
+	    auto instr = fetch_decode(line);
+	    m_vm.execute(instr);
+    }
 }
 
 InstructionOpcode REPL::str_to_opcode(const std::string& instr) {

@@ -1,16 +1,16 @@
 #pragma once
 
 enum class InstructionOpcode {
-	MOV,
-	ADD,
-	SUB,
-	NOP,
+    MOV,
+    ADD,
+    SUB,
+    NOP,
     MUL,
-	DIV,
+    DIV,
     XOR,
     PUSH,
     POP,
-	INVALID
+    INVALID
 };
 
 enum class RegisterOpcode {
