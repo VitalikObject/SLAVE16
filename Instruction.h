@@ -11,6 +11,11 @@ enum class InstructionOpcode {
     PUSH,
     POP,
     JMP,
+    CMP,
+    JE,
+    JNE,
+    JZ,
+    JNZ,
     INVALID
 };
 

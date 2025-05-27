@@ -1,4 +1,5 @@
 #include "VM.h"
+#include <iostream>
 
 VM::VM() {
     m_dispatch[InstructionOpcode::MOV] = [this](const std::vector<InstructionArg>& operands){ exec_MOV(operands); };
@@ -10,6 +11,12 @@ VM::VM() {
     m_dispatch[InstructionOpcode::PUSH] = [this](const std::vector<InstructionArg>& operands){ exec_PUSH(operands); };
     m_dispatch[InstructionOpcode::POP] = [this](const std::vector<InstructionArg>& operands){ exec_POP(operands); };
     m_dispatch[InstructionOpcode::JMP] = [this](const std::vector<InstructionArg>& operands){ exec_JMP(operands); };
+    m_dispatch[InstructionOpcode::CMP] = [this](const std::vector<InstructionArg>& operands){ exec_CMP(operands); };
+    m_dispatch[InstructionOpcode::JE] = [this](const std::vector<InstructionArg>& operands){ exec_JE(operands); };
+    m_dispatch[InstructionOpcode::JNE] = [this](const std::vector<InstructionArg>& operands){ exec_JNE(operands); };
+    m_dispatch[InstructionOpcode::JZ] = [this](const std::vector<InstructionArg>& operands){ exec_JZ(operands); };
+    m_dispatch[InstructionOpcode::JNZ] = [this](const std::vector<InstructionArg>& operands){ exec_JNZ(operands); };
+    m_dispatch[InstructionOpcode::NOP] = [this](const std::vector<InstructionArg>&){ exec_NOP(); };
 };  
 
 void VM::execute(const Instruction& instr) {
@@ -29,8 +36,13 @@ void VM::process_instructions() {
 
         it->second(instr.operands);
 
-        if (instr.opcode != InstructionOpcode::JMP) {
+        if (instr.opcode != InstructionOpcode::JMP && instr.opcode != InstructionOpcode::JE && 
+            instr.opcode != InstructionOpcode::JNE && instr.opcode != InstructionOpcode::JZ &&
+            instr.opcode != InstructionOpcode::JNZ) {
             step(1);
+#if DEBUG           
+            std::cout << ParseUtils::info_about_registers(m_registers) << std::endl;
+#endif
         }
     }
 }
@@ -57,8 +69,6 @@ void VM::exec_MOV(const std::vector<InstructionArg>& operands) {
         
         if constexpr (std::is_same_v<T, int>) {
             m_registers.set(dst, src);
-        } else if constexpr (std::is_same_v<T, double>) {
-            m_registers.set(dst, src); 
         } else if constexpr (std::is_same_v<T, RegisterOpcode>) {
             auto val = m_registers.get(src);
             m_registers.set(dst, val);
@@ -87,8 +97,6 @@ void VM::exec_ADD(const std::vector<InstructionArg>& operands) {
         
         if constexpr (std::is_same_v<T, int>) {
             m_registers.set(dst, (dst_value + src));
-        } else if constexpr (std::is_same_v<T, double>) {
-            m_registers.set(dst, (dst_value + src)); 
         } else if constexpr (std::is_same_v<T, RegisterOpcode>) {
             auto val = m_registers.get(src);
             m_registers.set(dst, (dst_value + val));
@@ -117,8 +125,6 @@ void VM::exec_SUB(const std::vector<InstructionArg>& operands) {
         
         if constexpr (std::is_same_v<T, int>) {
             m_registers.set(dst, (dst_value - src));
-        } else if constexpr (std::is_same_v<T, double>) {
-            m_registers.set(dst, (dst_value - src)); 
         } else if constexpr (std::is_same_v<T, RegisterOpcode>) {
             auto val = m_registers.get(src);
             m_registers.set(dst, (dst_value - val));
@@ -142,8 +148,6 @@ void VM::exec_MUL(const std::vector<InstructionArg>& operands) {
         
         if constexpr (std::is_same_v<T, int>) {
             m_registers.set(dst, (dst_value * src));
-        } else if constexpr (std::is_same_v<T, double>) {
-            m_registers.set(dst, (dst_value * src)); 
         } else if constexpr (std::is_same_v<T, RegisterOpcode>) {
             auto val = m_registers.get(src);
             m_registers.set(dst, (dst_value * val));
@@ -167,8 +171,6 @@ void VM::exec_DIV(const std::vector<InstructionArg>& operands) {
         
         if constexpr (std::is_same_v<T, int>) {
             m_registers.set(dst, (dst_value / src));
-        } else if constexpr (std::is_same_v<T, double>) {
-            m_registers.set(dst, (dst_value / src)); 
         } else if constexpr (std::is_same_v<T, RegisterOpcode>) {
             auto val = m_registers.get(src);
             m_registers.set(dst, (dst_value / val));
@@ -197,8 +199,6 @@ void VM::exec_XOR(const std::vector<InstructionArg>& operands) {
         
         if constexpr (std::is_same_v<T, int>) {
             m_registers.set(dst, (dst_value ^ src));
-        } else if constexpr (std::is_same_v<T, double>) {
-            m_registers.set(dst, (dst_value ^ static_cast<uint32_t>(src))); 
         } else if constexpr (std::is_same_v<T, RegisterOpcode>) {
             auto val = m_registers.get(src);
             m_registers.set(dst, (dst_value ^ val));
@@ -219,8 +219,6 @@ void VM::exec_PUSH(const std::vector<InstructionArg>& operands) {
         
         if constexpr (std::is_same_v<T, int>) {
             m_program_stack.push(src);
-        } else if constexpr (std::is_same_v<T, double>) {
-            m_program_stack.push(static_cast<uint32_t>(src));
         } else if constexpr (std::is_same_v<T, RegisterOpcode>) {
             auto val = m_registers.get(src);
             m_program_stack.push(val);
@@ -259,4 +257,120 @@ void VM::exec_JMP(const std::vector<InstructionArg>& operands) {
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
     m_pc = m_registers.get(dst);
+}
+
+void VM::exec_CMP(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 2) {
+        throw std::invalid_argument("CMP requires 2 operands");
+        return;
+    }
+
+    if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
+        throw std::invalid_argument("CMP first operand must be a register");
+        return;
+    }  
+    
+    RegisterOpcode a = std::get<RegisterOpcode>(operands[0]);
+    auto a_value = m_registers.get(a);
+
+    uint32_t b_value = std::visit([this](auto&& arg) -> uint32_t {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, RegisterOpcode>) {
+            return m_registers.get(arg);
+        } else if constexpr (std::is_same_v<T, int>) {
+            return static_cast<uint32_t>(arg);
+        } else {
+            throw std::invalid_argument("Unsupported operand type in CMP");
+        }
+    }, operands[1]);    
+
+    uint32_t result = a_value - b_value;
+
+    set_ZF(result == 0);
+    set_CF(a_value < b_value);
+    set_SF((result & 0x80000000) != 0);
+    bool sign_a = (a_value & 0x80000000) != 0;
+    bool sign_b = (b_value & 0x80000000) != 0;
+    bool sign_r = (result & 0x80000000) != 0;
+    set_OF((sign_a != sign_b) && (sign_r != sign_a));
+}
+
+void VM::exec_JE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JE requires 1 operand");
+        return;
+    }
+
+    uint32_t dst = std::visit([this](auto&& arg) -> uint32_t {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, RegisterOpcode>) {
+            return m_registers.get(arg);
+        } else if constexpr (std::is_same_v<T, int>) {
+            return static_cast<uint32_t>(arg);
+        } else {
+            throw std::invalid_argument("Unsupported operand type in JE");
+        }
+    }, operands[0]);  
+
+    if (get_ZF()) m_pc = dst;
+}
+
+void VM::exec_JNE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNE requires 1 operand");
+        return;
+    }
+
+    uint32_t dst = std::visit([this](auto&& arg) -> uint32_t {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, RegisterOpcode>) {
+            return m_registers.get(arg);
+        } else if constexpr (std::is_same_v<T, int>) {
+            return static_cast<uint32_t>(arg);
+        } else {
+            throw std::invalid_argument("Unsupported operand type in JNE");
+        }
+    }, operands[0]);    
+
+    if (!get_ZF()) m_pc = dst;
+}
+
+void VM::exec_JZ(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JZ requires 1 operand");
+        return;
+    }
+
+    uint32_t dst = std::visit([this](auto&& arg) -> uint32_t {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, RegisterOpcode>) {
+            return m_registers.get(arg);
+        } else if constexpr (std::is_same_v<T, int>) {
+            return static_cast<uint32_t>(arg);
+        } else {
+            throw std::invalid_argument("Unsupported operand type in JZ");
+        }
+    }, operands[0]);    
+
+    if (get_ZF()) m_pc = dst;
+}
+
+void VM::exec_JNZ(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNZ requires 1 operand");
+        return;
+    }
+
+    uint32_t dst = std::visit([this](auto&& arg) -> uint32_t {
+        using T = std::decay_t<decltype(arg)>;
+        if constexpr (std::is_same_v<T, RegisterOpcode>) {
+            return m_registers.get(arg);
+        } else if constexpr (std::is_same_v<T, int>) {
+            return static_cast<uint32_t>(arg);
+        } else {
+            throw std::invalid_argument("Unsupported operand type in JNZ");
+        }
+    }, operands[0]);    
+
+    if (!get_ZF()) m_pc = dst;
 }

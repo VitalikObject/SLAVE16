@@ -39,6 +39,13 @@ int32_t ParseUtils::uint32_to_int32(uint32_t val) {
     return static_cast<int32_t>(val);
 }
 
+std::string ParseUtils::info_about_registers(const Registers& registers) {
+    return "EAX: " + std::to_string(registers.get_EAX()) + ", EBX: " + std::to_string(registers.get_EBX()) +
+           ", ECX: " + std::to_string(registers.get_ECX()) + ", EDX: " + std::to_string(registers.get_EDX()) +
+           ", ESI: " + std::to_string(registers.get_ESI()) + ", EDI: " + std::to_string(registers.get_EDI()) +
+           ", ESP: " + std::to_string(registers.get_ESP()) + ", EBP: " + std::to_string(registers.get_EBP()); 
+}
+
 const std::unordered_map<std::string, InstructionOpcode> ParseUtils::instr_map = {
     { "MOV", InstructionOpcode::MOV },
     { "ADD", InstructionOpcode::ADD },
@@ -48,7 +55,13 @@ const std::unordered_map<std::string, InstructionOpcode> ParseUtils::instr_map =
     { "XOR", InstructionOpcode::XOR },
     { "PUSH", InstructionOpcode::PUSH },
     { "POP", InstructionOpcode::POP },
-    { "JMP", InstructionOpcode::JMP }
+    { "JMP", InstructionOpcode::JMP },
+    { "CMP", InstructionOpcode::CMP },
+    { "JE", InstructionOpcode::JE },
+    { "JNE", InstructionOpcode::JNE },
+    { "JZ", InstructionOpcode::JZ },
+    { "JNZ", InstructionOpcode::JNZ },
+    { "NOP", InstructionOpcode::NOP }
 };
 
 const std::unordered_map<std::string, RegisterOpcode> ParseUtils::reg_map = {
