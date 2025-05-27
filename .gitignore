@@ -1,0 +1,31 @@
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.VolumeIcon.icns
+.fseventsd
+.com.apple.timemachine.donotpresent
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Compiled output files
+*.out
+
+# Files with no extension (Unix-style)
+# Match all files that have no dot (.) in the filename
+*.
+!*.*
+
+# The two lines above work like this:
+#   *      = match all files
+#   *.     = only files with no extension (just ends with dot or no dot)
+#   !*.*   = negate ignore for files that do have a dot
+
+# You might also want to explicitly allow directories
+!*/
