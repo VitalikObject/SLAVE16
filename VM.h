@@ -12,11 +12,14 @@ private:
     uint32_t m_pc {};
     std::unordered_map<InstructionOpcode, std::function<void(const std::vector<InstructionArg>& operands)>> m_dispatch;
     std::stack<uint32_t> m_program_stack;
+    std::vector<Instruction> m_program;
+
 public:
     VM();
     void execute(const Instruction& instr);
 private:
-    void step();
+    void step(int step = 1);
+    void process_instructions();
 
     void exec_MOV(const std::vector<InstructionArg>& operands);
     void exec_ADD(const std::vector<InstructionArg>& operands);
@@ -26,4 +29,5 @@ private:
     void exec_XOR(const std::vector<InstructionArg>& operands);
     void exec_PUSH(const std::vector<InstructionArg>& operands);
     void exec_POP(const std::vector<InstructionArg>& operands);
+    void exec_JMP(const std::vector<InstructionArg>& operands);
 };

@@ -30,10 +30,17 @@ Instruction REPL::fetch_decode(const std::string& line) {
 
 void REPL::run() {
     std::string line;
-    while (!m_is_halted && getline(std::cin, line)) {
-	    if(line.empty()) continue;
-	    auto instr = fetch_decode(line);
-	    m_vm.execute(instr);
+    int line_number = 0;
+
+    while (!m_is_halted) {
+        std::cerr << line_number << ": ";
+        if (!std::getline(std::cin, line)) break;
+        
+        if (line.empty()) continue;
+
+        auto instr = fetch_decode(line);
+        m_vm.execute(instr);
+        ++line_number;
     }
 }
 

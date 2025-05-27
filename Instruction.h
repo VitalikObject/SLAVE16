@@ -10,6 +10,7 @@ enum class InstructionOpcode {
     XOR,
     PUSH,
     POP,
+    JMP,
     INVALID
 };
 

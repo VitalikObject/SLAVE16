@@ -9,21 +9,34 @@ VM::VM() {
     m_dispatch[InstructionOpcode::XOR] = [this](const std::vector<InstructionArg>& operands){ exec_XOR(operands); };
     m_dispatch[InstructionOpcode::PUSH] = [this](const std::vector<InstructionArg>& operands){ exec_PUSH(operands); };
     m_dispatch[InstructionOpcode::POP] = [this](const std::vector<InstructionArg>& operands){ exec_POP(operands); };
+    m_dispatch[InstructionOpcode::JMP] = [this](const std::vector<InstructionArg>& operands){ exec_JMP(operands); };
 };  
 
 void VM::execute(const Instruction& instr) {
-    auto it = m_dispatch.find(instr.opcode);
-    if (it != m_dispatch.end()) {
+    m_program.push_back(instr);
+
+    process_instructions();
+}
+
+void VM::process_instructions() {
+    while (m_pc < m_program.size()) {
+        const Instruction& instr = m_program[m_pc];
+
+        auto it = m_dispatch.find(instr.opcode);
+        if (it == m_dispatch.end()) {
+            throw std::invalid_argument("Unknown opcode!");
+        }
+
         it->second(instr.operands);
-        this->step();
-    } else {
-        throw std::invalid_argument("Unknown opcode!");
-        return;
+
+        if (instr.opcode != InstructionOpcode::JMP) {
+            step(1);
+        }
     }
 }
 
-void VM::step() {
-    m_pc += 1;
+void VM::step(int step) {
+    m_pc += step;
 }
 
 void VM::exec_MOV(const std::vector<InstructionArg>& operands) {
@@ -231,4 +244,19 @@ void VM::exec_POP(const std::vector<InstructionArg>& operands) {
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
     m_registers.set(dst, m_program_stack.top());
     m_program_stack.pop();
+}
+
+void VM::exec_JMP(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JMP requires 1 operand");
+        return;
+    }
+
+    if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
+        throw std::invalid_argument("JMP first operand must be a register");
+        return;
+    }    
+
+    RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
+    m_pc = m_registers.get(dst);
 }

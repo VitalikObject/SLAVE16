@@ -35,6 +35,10 @@ std::string ParseUtils::to_upper(const std::string& str) {
     return out;
 }
 
+int32_t ParseUtils::uint32_to_int32(uint32_t val) {
+    return static_cast<int32_t>(val);
+}
+
 const std::unordered_map<std::string, InstructionOpcode> ParseUtils::instr_map = {
     { "MOV", InstructionOpcode::MOV },
     { "ADD", InstructionOpcode::ADD },
@@ -43,7 +47,8 @@ const std::unordered_map<std::string, InstructionOpcode> ParseUtils::instr_map =
     { "DIV", InstructionOpcode::DIV },
     { "XOR", InstructionOpcode::XOR },
     { "PUSH", InstructionOpcode::PUSH },
-    { "POP", InstructionOpcode::POP }
+    { "POP", InstructionOpcode::POP },
+    { "JMP", InstructionOpcode::JMP }
 };
 
 const std::unordered_map<std::string, RegisterOpcode> ParseUtils::reg_map = {
