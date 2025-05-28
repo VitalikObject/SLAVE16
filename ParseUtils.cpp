@@ -59,7 +59,11 @@ const std::unordered_map<std::string, InstructionOpcode> ParseUtils::instr_map =
     { "JNZ", InstructionOpcode::JNZ },
     { "NOP", InstructionOpcode::NOP },
     { "INC", InstructionOpcode::INC },
-    { "DEC", InstructionOpcode::DEC }
+    { "DEC", InstructionOpcode::DEC },
+    { "SAL", InstructionOpcode::SAL },
+    { "SAR", InstructionOpcode::SAR },
+    { "SHL", InstructionOpcode::SHL },
+    { "SHR", InstructionOpcode::SHR }
 };
 
 const std::unordered_map<std::string, RegisterOpcode> ParseUtils::reg_map = {

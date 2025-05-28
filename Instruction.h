@@ -23,6 +23,10 @@ enum class InstructionOpcode {
     JNZ,
     INC,
     DEC,
+    SAL,
+    SAR,
+    SHL,
+    SHR,
     INVALID
 };
 
@@ -36,6 +40,15 @@ enum class RegisterOpcode {
     ESP, SP,
     EBP, BP,
     INVALID_REG
+};
+
+enum class Flag : uint8_t {
+    Carry     = 0,
+    Parity    = 2,
+    Auxiliary = 4,
+    Zero      = 6,
+    Sign      = 7,
+    Overflow = 11
 };
 
 using InstructionArg = std::variant<int, double, RegisterOpcode>;

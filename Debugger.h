@@ -7,6 +7,7 @@
 class Debugger {
 public:
     static std::string info_about_registers(const Registers& registers);
+    static std::string info_about_flags(const Registers& registers);
 
     [[noreturn]] static void throw_arg_error(const std::string& msg) {
         throw std::invalid_argument{msg};

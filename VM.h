@@ -6,6 +6,7 @@
 #include <stdexcept>
 #include <stack>
 #include <vector>
+#include <bit>
 
 class VM {
 private:
@@ -16,11 +17,6 @@ private:
     std::stack<uint32_t> m_program_stack;
     std::vector<Instruction> m_program;
 
-    static constexpr uint32_t ZF_MASK = 1 << 6; 
-    static constexpr uint32_t SF_MASK = 1 << 7; 
-    static constexpr uint32_t CF_MASK = 1 << 0;  
-    static constexpr uint32_t OF_MASK = 1 << 11; 
-    
     template<typename F>
     uint32_t get_value(const InstructionArg& arg, F&& err);    
 
@@ -50,14 +46,9 @@ private:
     void exec_JNZ(const std::vector<InstructionArg>& operands);
     void exec_INC(const std::vector<InstructionArg>& operands);
     void exec_DEC(const std::vector<InstructionArg>& operands);
+    void exec_SAL(const std::vector<InstructionArg>& operands);
+    void exec_SAR(const std::vector<InstructionArg>& operands);
+    void exec_SHL(const std::vector<InstructionArg>& operands);
+    void exec_SHR(const std::vector<InstructionArg>& operands);
     void exec_NOP() {}
-
-    void set_ZF(bool value) { value ? m_eflags |= ZF_MASK : m_eflags &= ~ZF_MASK; }
-    bool get_ZF() const { return m_eflags & ZF_MASK; }
-    void set_SF(bool value) { value ? m_eflags |= SF_MASK : m_eflags &= ~SF_MASK; }
-    bool get_SF() const { return m_eflags & SF_MASK; }
-    void set_CF(bool value) { value ? m_eflags |= CF_MASK : m_eflags &= ~CF_MASK; }
-    bool get_CF() const { return m_eflags & CF_MASK; }
-    void set_OF(bool value) { value ? m_eflags |= OF_MASK : m_eflags &= ~OF_MASK; }
-    bool get_OF() const { return m_eflags & OF_MASK; }
 };

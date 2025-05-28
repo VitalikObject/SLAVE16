@@ -11,9 +11,12 @@ class Registers {
 private:
     uint32_t m_eax {}, m_ebx {}, m_ecx {}, m_edx {};
     uint32_t m_esi {}, m_edi {}, m_esp {}, m_ebp {};
+    uint32_t m_eflags {};
 
     std::unordered_map<RegisterOpcode, std::function<uint32_t()>> m_reg_getters;
-    std::unordered_map<RegisterOpcode, std::function<void(uint32_t)>> m_reg_setters;    
+    std::unordered_map<RegisterOpcode, std::function<void(uint32_t)>> m_reg_setters;   
+
+    static constexpr uint32_t flag_mask(Flag f) { return 1u << (uint8_t)f; }
 
 public:
     Registers();
@@ -24,6 +27,9 @@ public:
 
     uint32_t get(RegisterOpcode opcode) const;
     void set(RegisterOpcode opcode, uint32_t value);
+
+    bool get_flag(Flag f) const;
+    void set_flag(Flag f, bool value);
 
     // ====== EAX ======
     uint32_t get_EAX() const { return m_eax; }

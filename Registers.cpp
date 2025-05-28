@@ -21,6 +21,16 @@ void Registers::set(RegisterOpcode opcode, uint32_t value) {
     }
 }
 
+bool Registers::get_flag(Flag f) const {
+    return (m_eflags & flag_mask(f)) != 0;
+}
+
+void Registers::set_flag(Flag f, bool value) {
+    const uint32_t m = flag_mask(f);
+    if (value) m_eflags |= m;
+    else       m_eflags &= ~m;
+}
+
 void Registers::init_register_maps() {
     m_reg_getters.clear();
     m_reg_setters.clear();
