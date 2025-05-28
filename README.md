@@ -5,12 +5,12 @@
 
 ## Overview
 
-This project implements a simple x86-inspired virtual machine (VM) and interactive REPL (Read–Eval–Print Loop) written in C++. It supports a subset of common instructions (`MOV`, `ADD`, `SUB`, `MUL`, `DIV`, `XOR`, `PUSH`, `POP`) and register operations on 32-bit, 16-bit, and 8-bit registers (`EAX`, `AX`, `AH`, `AL`, etc.).
+This project implements a simple x86-inspired virtual machine (VM) and interactive REPL (Read–Eval–Print Loop) written in C++. It supports a subset of common instructions and register operations on 32-bit, 16-bit, and 8-bit registers.
 
 ## Features
 
-- **Instruction Set:** `MOV`, `ADD`, `SUB`, `MUL`, `DIV`, `XOR`, `PUSH`, `POP`.
-- **Register Bank:** 32-bit registers (`EAX`, `EBX`, `ECX`, `EDX`, `ESI`, `EDI`, `ESP`, `EBP`) plus their 16-bit and 8-bit subdivisions.
+- **Instruction Set:** [instructions](https://github.com/VitalikObject/SLAVE16/blob/master/Instruction.h#L5-L57).
+- **Register Bank:** 32-bit [registers](https://github.com/VitalikObject/SLAVE16/blob/master/Instruction.h#L59-L69) plus their 16-bit and 8-bit subdivisions.
 - **Stack Operations:** Push and pop values to/from an internal program stack.
 - **Interactive REPL:** Read–Eval–Print Loop for entering assembly-like instructions at runtime.
 

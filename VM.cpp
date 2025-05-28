@@ -337,7 +337,7 @@ void VM::exec_JMP(const std::vector<InstructionArg>& operands) {
     }
 
     uint32_t dst = get_value(operands[0], 
-        [&](auto why){ Debugger::throw_arg_error(std::string{"JNG: "} + why); });  
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JMP: "} + why); });  
 
     m_pc = dst;
 }
@@ -563,7 +563,7 @@ void VM::exec_JNGE(const std::vector<InstructionArg>& operands) {
     }
 
     uint32_t dst = get_value(operands[0], 
-        [&](auto why){ Debugger::throw_arg_error(std::string{"JNFE: "} + why); });    
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNGE: "} + why); });    
 
     if (m_registers.get_flag(Flag::Sign) != m_registers.get_flag(Flag::Overflow)) m_pc = dst;
 }
