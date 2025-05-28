@@ -6,12 +6,14 @@
 #include <cstdint>
 #include <algorithm>
 #include <unordered_map>
+#include <unordered_set>
 #include "Instruction.h"
 
 class ParseUtils {
 public:
     static const std::unordered_map<std::string, InstructionOpcode> instr_map;
-    static const std::unordered_map<std::string, RegisterOpcode>    reg_map;
+    static const std::unordered_map<std::string, RegisterOpcode>      reg_map;
+    static const std::unordered_set<InstructionOpcode>           jump_opcodes;
 
     static bool is_int(const std::string& str);
     static bool is_double(const std::string& str);

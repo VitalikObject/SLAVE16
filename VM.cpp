@@ -19,6 +19,31 @@ VM::VM() {
     m_dispatch[InstructionOpcode::JNE] = [this](const std::vector<InstructionArg>& operands){ exec_JNE(operands); };
     m_dispatch[InstructionOpcode::JZ] = [this](const std::vector<InstructionArg>& operands){ exec_JZ(operands); };
     m_dispatch[InstructionOpcode::JNZ] = [this](const std::vector<InstructionArg>& operands){ exec_JNZ(operands); };
+    m_dispatch[InstructionOpcode::JA] = [this](const std::vector<InstructionArg>& operands){ exec_JA(operands); };
+    m_dispatch[InstructionOpcode::JNBE] = [this](const std::vector<InstructionArg>& operands){ exec_JNBE(operands); };
+    m_dispatch[InstructionOpcode::JAE] = [this](const std::vector<InstructionArg>& operands){ exec_JAE(operands); };
+    m_dispatch[InstructionOpcode::JNB] = [this](const std::vector<InstructionArg>& operands){ exec_JNB(operands); };
+    m_dispatch[InstructionOpcode::JB] = [this](const std::vector<InstructionArg>& operands){ exec_JB(operands); };
+    m_dispatch[InstructionOpcode::JNAE] = [this](const std::vector<InstructionArg>& operands){ exec_JNAE(operands); };
+    m_dispatch[InstructionOpcode::JBE] = [this](const std::vector<InstructionArg>& operands){ exec_JBE(operands); };
+    m_dispatch[InstructionOpcode::JNA] = [this](const std::vector<InstructionArg>& operands){ exec_JNA(operands); };
+    m_dispatch[InstructionOpcode::JG] = [this](const std::vector<InstructionArg>& operands){ exec_JG(operands); };
+    m_dispatch[InstructionOpcode::JNLE] = [this](const std::vector<InstructionArg>& operands){ exec_JNLE(operands); };
+    m_dispatch[InstructionOpcode::JGE] = [this](const std::vector<InstructionArg>& operands){ exec_JGE(operands); };
+    m_dispatch[InstructionOpcode::JNL] = [this](const std::vector<InstructionArg>& operands){ exec_JNL(operands); };
+    m_dispatch[InstructionOpcode::JL] = [this](const std::vector<InstructionArg>& operands){ exec_JL(operands); };
+    m_dispatch[InstructionOpcode::JNGE] = [this](const std::vector<InstructionArg>& operands){ exec_JNGE(operands); };
+    m_dispatch[InstructionOpcode::JLE] = [this](const std::vector<InstructionArg>& operands){ exec_JLE(operands); };
+    m_dispatch[InstructionOpcode::JC] = [this](const std::vector<InstructionArg>& operands){ exec_JC(operands); };
+    m_dispatch[InstructionOpcode::JNC] = [this](const std::vector<InstructionArg>& operands){ exec_JNC(operands); };
+    m_dispatch[InstructionOpcode::JO] = [this](const std::vector<InstructionArg>& operands){ exec_JO(operands); };
+    m_dispatch[InstructionOpcode::JNO] = [this](const std::vector<InstructionArg>& operands){ exec_JNO(operands); };
+    m_dispatch[InstructionOpcode::JS] = [this](const std::vector<InstructionArg>& operands){ exec_JS(operands); };
+    m_dispatch[InstructionOpcode::JNS] = [this](const std::vector<InstructionArg>& operands){ exec_JNS(operands); };
+    m_dispatch[InstructionOpcode::JP] = [this](const std::vector<InstructionArg>& operands){ exec_JP(operands); };
+    m_dispatch[InstructionOpcode::JPE] = [this](const std::vector<InstructionArg>& operands){ exec_JPE(operands); };
+    m_dispatch[InstructionOpcode::JNP] = [this](const std::vector<InstructionArg>& operands){ exec_JNP(operands); };
+    m_dispatch[InstructionOpcode::JPO] = [this](const std::vector<InstructionArg>& operands){ exec_JPO(operands); };
     m_dispatch[InstructionOpcode::INC] = [this](const std::vector<InstructionArg>& operands){ exec_INC(operands); };
     m_dispatch[InstructionOpcode::DEC] = [this](const std::vector<InstructionArg>& operands){ exec_DEC(operands); };
     m_dispatch[InstructionOpcode::SAL] = [this](const std::vector<InstructionArg>& operands){ exec_SAL(operands); };
@@ -45,9 +70,7 @@ void VM::process_instructions() {
 
         it->second(instr.operands);
 
-        if (instr.opcode != InstructionOpcode::JMP && instr.opcode != InstructionOpcode::JE && 
-            instr.opcode != InstructionOpcode::JNE && instr.opcode != InstructionOpcode::JZ &&
-            instr.opcode != InstructionOpcode::JNZ) {
+        if (!ParseUtils::jump_opcodes.contains(instr.opcode)) {
             step(1);
 #if DEBUG           
             std::cerr << Debugger::info_about_registers(m_registers) << std::endl;
@@ -74,12 +97,10 @@ uint32_t VM::get_value(const InstructionArg& arg, F&& err) {
 void VM::exec_MOV(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 2) {
         throw std::invalid_argument("MOV requires 2 operands");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("MOV first operand must be a register");
-        return;
     }
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
@@ -93,12 +114,10 @@ void VM::exec_MOV(const std::vector<InstructionArg>& operands) {
 void VM::exec_ADD(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 2) {
         throw std::invalid_argument("ADD requires 2 operands");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("ADD first operand must be a register");
-        return;
     }
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
@@ -125,12 +144,10 @@ void VM::exec_ADD(const std::vector<InstructionArg>& operands) {
 void VM::exec_SUB(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 2) {
         throw std::invalid_argument("SUB requires 2 operands");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("SUB first operand must be a register");
-        return;
     }
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
@@ -156,7 +173,6 @@ void VM::exec_SUB(const std::vector<InstructionArg>& operands) {
 void VM::exec_MUL(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("MUL requires 1 operand");
-        return;
     }
 
     RegisterOpcode dst = RegisterOpcode::EAX;
@@ -177,7 +193,6 @@ void VM::exec_MUL(const std::vector<InstructionArg>& operands) {
 void VM::exec_DIV(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("DIV requires 1 operand");
-        return;
     }
 
     RegisterOpcode dst = RegisterOpcode::EAX;
@@ -192,12 +207,10 @@ void VM::exec_DIV(const std::vector<InstructionArg>& operands) {
 void VM::exec_AND(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 2) {
         throw std::invalid_argument("AND requires 2 operands");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("AND first operand must be a register");
-        return;
     }
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
@@ -223,12 +236,10 @@ void VM::exec_AND(const std::vector<InstructionArg>& operands) {
 void VM::exec_OR(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 2) {
         throw std::invalid_argument("OR requires 2 operands");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("OR first operand must be a register");
-        return;
     }
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
@@ -254,12 +265,10 @@ void VM::exec_OR(const std::vector<InstructionArg>& operands) {
 void VM::exec_XOR(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 2) {
         throw std::invalid_argument("XOR requires 2 operands");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("XOR first operand must be a register");
-        return;
     }
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
@@ -281,15 +290,14 @@ void VM::exec_XOR(const std::vector<InstructionArg>& operands) {
     m_registers.set_flag(Flag::Carry, false);
     m_registers.set_flag(Flag::Overflow, false);
 }
+
 void VM::exec_NOT(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("NOT requires 1 operand");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("NOT first operand must be a register");
-        return;
     }
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
@@ -301,7 +309,6 @@ void VM::exec_NOT(const std::vector<InstructionArg>& operands) {
 void VM::exec_PUSH(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("PUSH requires 1 operand");
-        return;
     }
 
     uint32_t src = get_value(operands[0], 
@@ -313,12 +320,10 @@ void VM::exec_PUSH(const std::vector<InstructionArg>& operands) {
 void VM::exec_POP(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("PUSH requires 1 operand");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("POP first operand must be a register");
-        return;
     }    
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
@@ -329,27 +334,21 @@ void VM::exec_POP(const std::vector<InstructionArg>& operands) {
 void VM::exec_JMP(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("JMP requires 1 operand");
-        return;
     }
 
-    if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
-        throw std::invalid_argument("JMP first operand must be a register");
-        return;
-    }    
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNG: "} + why); });  
 
-    RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
-    m_pc = m_registers.get(dst);
+    m_pc = dst;
 }
 
 void VM::exec_CMP(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 2) {
         throw std::invalid_argument("CMP requires 2 operands");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("CMP first operand must be a register");
-        return;
     }  
     
     RegisterOpcode a = std::get<RegisterOpcode>(operands[0]);
@@ -372,7 +371,6 @@ void VM::exec_CMP(const std::vector<InstructionArg>& operands) {
 void VM::exec_JE(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("JE requires 1 operand");
-        return;
     }
 
     uint32_t dst = get_value(operands[0], 
@@ -384,7 +382,6 @@ void VM::exec_JE(const std::vector<InstructionArg>& operands) {
 void VM::exec_JNE(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("JNE requires 1 operand");
-        return;
     }
 
     uint32_t dst = get_value(operands[0], 
@@ -396,7 +393,6 @@ void VM::exec_JNE(const std::vector<InstructionArg>& operands) {
 void VM::exec_JZ(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("JZ requires 1 operand");
-        return;
     }
 
     uint32_t dst = get_value(operands[0], 
@@ -408,7 +404,6 @@ void VM::exec_JZ(const std::vector<InstructionArg>& operands) {
 void VM::exec_JNZ(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("JNZ requires 1 operand");
-        return;
     }
 
     uint32_t dst = get_value(operands[0], 
@@ -417,15 +412,303 @@ void VM::exec_JNZ(const std::vector<InstructionArg>& operands) {
     if (!m_registers.get_flag(Flag::Zero)) m_pc = dst;
 }
 
+void VM::exec_JA(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JA requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JA: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Carry) && !m_registers.get_flag(Flag::Zero)) m_pc = dst;
+}
+
+void VM::exec_JNBE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNBE requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNBE: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Carry) && !m_registers.get_flag(Flag::Zero)) m_pc = dst;
+}
+
+void VM::exec_JAE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JAE requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JAE: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Carry)) m_pc = dst;
+}
+
+void VM::exec_JNB(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNB requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNB: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Carry)) m_pc = dst;
+}
+
+void VM::exec_JB(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JB requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JB: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Carry)) m_pc = dst;
+}
+
+void VM::exec_JNAE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNAE requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNAE: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Carry)) m_pc = dst;
+}
+
+void VM::exec_JBE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JBE requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JBE: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Carry) || m_registers.get_flag(Flag::Zero)) m_pc = dst;
+}
+
+void VM::exec_JNA(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNA requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNA: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Carry) || m_registers.get_flag(Flag::Zero)) m_pc = dst;
+}
+
+void VM::exec_JG(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JG requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JG: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Zero) && 
+	m_registers.get_flag(Flag::Sign) == m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JNLE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNLE requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNLE: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Zero) && 
+	m_registers.get_flag(Flag::Sign) == m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JGE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JGE requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JGE: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Sign) == m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JNL(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNL requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNL: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Sign) == m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JL(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JL requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JL: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Sign) != m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JNGE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNGE requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNFE: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Sign) != m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JLE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JLE requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JLE: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Zero) && 
+	m_registers.get_flag(Flag::Sign) != m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JNG(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNG requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNG: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Zero) && 
+	m_registers.get_flag(Flag::Sign) != m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JC(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JC requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JC: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Carry)) m_pc = dst;
+}
+
+void VM::exec_JNC(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNC requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNC: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Carry)) m_pc = dst;
+}
+
+void VM::exec_JO(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JO requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JO: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JNO(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNO requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNO: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Overflow)) m_pc = dst;
+}
+
+void VM::exec_JS(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JS requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JS: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Sign)) m_pc = dst;
+}
+
+void VM::exec_JNS(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNS requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNS: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Sign)) m_pc = dst;
+}
+
+void VM::exec_JP(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JP requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JP: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Parity)) m_pc = dst;
+}
+
+void VM::exec_JPE(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JPE requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JPE: "} + why); });    
+
+    if (m_registers.get_flag(Flag::Parity)) m_pc = dst;
+}
+
+void VM::exec_JNP(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JNP requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JNP: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Parity)) m_pc = dst;
+}
+
+void VM::exec_JPO(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("JPO requires 1 operand");
+    }
+
+    uint32_t dst = get_value(operands[0], 
+        [&](auto why){ Debugger::throw_arg_error(std::string{"JPO: "} + why); });    
+
+    if (!m_registers.get_flag(Flag::Parity)) m_pc = dst;
+}
+
 void VM::exec_INC(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("INC requires 1 operand");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("INC first operand must be a register");
-        return;
     }
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
@@ -437,12 +720,10 @@ void VM::exec_INC(const std::vector<InstructionArg>& operands) {
 void VM::exec_DEC(const std::vector<InstructionArg>& operands) {
     if (operands.size() != 1) {
         throw std::invalid_argument("DEC requires 1 operand");
-        return;
     }
 
     if (!std::holds_alternative<RegisterOpcode>(operands[0])) {
         throw std::invalid_argument("DEC first operand must be a register");
-        return;
     }
 
     RegisterOpcode dst = std::get<RegisterOpcode>(operands[0]);
