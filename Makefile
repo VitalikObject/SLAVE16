@@ -1,9 +1,9 @@
 CXX = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -O2
 
-SRCS = main.cpp ParseUtils.cpp REPL.cpp Registers.cpp VM.cpp
+SRCS = main.cpp ParseUtils.cpp Debugger.cpp REPL.cpp Registers.cpp VM.cpp
 OBJS = $(SRCS:.cpp=.o)
-DEPS = Instruction.h ParseUtils.h REPL.h Registers.h VM.h
+DEPS = Instruction.h ParseUtils.h Debugger.h REPL.h Registers.h VM.h
 
 TARGET = slave16
 DEBUG_TARGET = slave16_debug

@@ -7,7 +7,10 @@ enum class InstructionOpcode {
     NOP,
     MUL,
     DIV,
+    AND,
+    OR,
     XOR,
+    NOT,
     PUSH,
     POP,
     JMP,
@@ -16,6 +19,8 @@ enum class InstructionOpcode {
     JNE,
     JZ,
     JNZ,
+    INC,
+    DEC,
     INVALID
 };
 

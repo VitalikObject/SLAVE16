@@ -2,6 +2,7 @@
 
 #include "ParseUtils.h"
 #include "Registers.h"
+#include "Debugger.h"
 #include <stdexcept>
 #include <stack>
 #include <vector>
@@ -19,6 +20,9 @@ private:
     static constexpr uint32_t SF_MASK = 1 << 7; 
     static constexpr uint32_t CF_MASK = 1 << 0;  
     static constexpr uint32_t OF_MASK = 1 << 11; 
+    
+    template<typename F>
+    uint32_t get_value(const InstructionArg& arg, F&& err);    
 
 public:
     VM();
@@ -32,7 +36,10 @@ private:
     void exec_SUB(const std::vector<InstructionArg>& operands); 
     void exec_MUL(const std::vector<InstructionArg>& operands);
     void exec_DIV(const std::vector<InstructionArg>& operands);
+    void exec_AND(const std::vector<InstructionArg>& operands);
+    void exec_OR(const std::vector<InstructionArg>& operands);
     void exec_XOR(const std::vector<InstructionArg>& operands);
+    void exec_NOT(const std::vector<InstructionArg>& operands);
     void exec_PUSH(const std::vector<InstructionArg>& operands);
     void exec_POP(const std::vector<InstructionArg>& operands);
     void exec_JMP(const std::vector<InstructionArg>& operands);
@@ -41,6 +48,8 @@ private:
     void exec_JNE(const std::vector<InstructionArg>& operands);
     void exec_JZ(const std::vector<InstructionArg>& operands);
     void exec_JNZ(const std::vector<InstructionArg>& operands);
+    void exec_INC(const std::vector<InstructionArg>& operands);
+    void exec_DEC(const std::vector<InstructionArg>& operands);
     void exec_NOP() {}
 
     void set_ZF(bool value) { value ? m_eflags |= ZF_MASK : m_eflags &= ~ZF_MASK; }
