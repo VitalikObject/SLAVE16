@@ -1,7 +1,11 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <sstream>
+#include <cstdint>
+#include <algorithm>
+#include <unordered_map>
 #include "Instruction.h"
 
 class ParseUtils {

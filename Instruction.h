@@ -1,5 +1,7 @@
 #pragma once
 
+#include <variant>
+
 enum class InstructionOpcode {
     MOV,
     ADD,
