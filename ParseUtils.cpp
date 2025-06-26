@@ -4,10 +4,22 @@ bool ParseUtils::is_int(const std::string& str) {
     if (str.empty()) return false;
 
     size_t start = 0;
-    if (str[0] == '-' || str[0] == '+') start = 1;
-    if (start == str.size()) return false;
+    if (str[0] == '-' || str[0] == '+') {
+        start = 1;
+        if (start == str.size()) return false; 
+    }
 
-    return std::all_of(str.begin() + start, str.end(), ::isdigit);
+    size_t end = str.size();
+    char suf = std::tolower(str.back());
+    if ((suf == 'h' || suf == 'd') && end - start > 1) {
+        --end;
+    }
+
+    return std::all_of(
+        str.begin() + start,
+        str.begin() + end,
+        [](char c){ return std::isdigit(static_cast<unsigned char>(c)); }
+    );
 }
 
 bool ParseUtils::is_double(const std::string& str) {
@@ -20,8 +32,39 @@ bool ParseUtils::is_double(const std::string& str) {
     return !(iss >> c); 
 }
 
+bool ParseUtils::is_char(const std::string& str) {
+    if (str.size() < 3 || str.front() != '\'' || str.back() != '\'')
+        return false;
+    
+    std::string inner = str.substr(1, str.size() - 2);
+    
+    if (inner.size() == 1)
+        return true;
+    
+    if (inner.size() == 2 && inner[0] == '\\')
+        return true;
+
+    return false;
+}
+
 int ParseUtils::string_to_int(const std::string& str) {
-    return std::stoi(str);
+    if (str.empty())
+        throw std::invalid_argument("Empty string");
+
+    char suf = std::tolower(str.back());
+    int base = 10;
+    std::string num = str;
+
+    if (suf == 'h') {
+        base = 16;
+        num = str.substr(0, str.size() - 1);
+    }
+    else if (suf == 'd') {
+        base = 10;
+        num = str.substr(0, str.size() - 1);
+    }
+
+    return std::stoi(num, nullptr, base);
 }
 
 double ParseUtils::string_to_double(const std::string& str) {
@@ -34,6 +77,47 @@ std::string ParseUtils::to_upper(const std::string& str) {
                     [](unsigned char c){ return std::toupper(c); });
     return out;
 }
+
+char ParseUtils::string_to_char(const std::string& str) {
+    if (!is_char(str)) {
+        throw std::invalid_argument("Invalid character literal: " + str);
+    }
+
+    std::string inner = str.substr(1, str.size() - 2);
+
+    if (inner.size() == 1) {
+        return inner[0];
+    }
+
+    static const std::unordered_map<char, char> esc_map = {
+        {'a', '\a'}, {'b', '\b'}, {'f', '\f'}, {'n', '\n'},
+        {'r', '\r'}, {'t', '\t'}, {'v', '\v'},
+        {'\'', '\''}, {'"', '"'}, {'?', '\?'}, {'\\', '\\'},
+        {'0', '\0'}
+    };
+
+    char type = inner[1];
+    auto it = esc_map.find(type);
+    if (it != esc_map.end()) {
+        return it->second;
+    }
+
+    if (type == 'x' && inner.size() > 2) {
+        unsigned int code = std::stoul(inner.substr(2), nullptr, 16);
+        return static_cast<char>(code);
+    } else if (inner[1] >= '0' && inner[1] <= '7') {
+        unsigned int code = std::stoul(inner.substr(1), nullptr, 8);
+        return static_cast<char>(code);
+    }
+
+    if ((inner[1] == 'u' && inner.size() == 5) || (inner[1] == 'U' && inner.size() == 9)) {
+        unsigned int code = std::stoul(inner.substr(2), nullptr, 16);
+        return static_cast<char>(code);
+    }
+
+    throw std::invalid_argument("Unsupported escape sequence: '" + inner + "'");
+}
+
 
 int32_t ParseUtils::uint32_to_int32(uint32_t val) {
     return static_cast<int32_t>(val);
@@ -89,7 +173,8 @@ const std::unordered_map<std::string, InstructionOpcode> ParseUtils::instr_map =
     { "SAL", InstructionOpcode::SAL },
     { "SAR", InstructionOpcode::SAR },
     { "SHL", InstructionOpcode::SHL },
-    { "SHR", InstructionOpcode::SHR }
+    { "SHR", InstructionOpcode::SHR },
+    { "INT", InstructionOpcode::INT}
 };
 
 const std::unordered_map<std::string, RegisterOpcode> ParseUtils::reg_map = {

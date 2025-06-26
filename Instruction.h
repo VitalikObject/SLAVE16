@@ -53,6 +53,7 @@ enum class InstructionOpcode {
     SAR,
     SHL,
     SHR,
+    INT,
     INVALID
 };
 

@@ -1,4 +1,5 @@
 #include "VM.h"
+#include "Interrupt.h"
 #include <iostream>
 
 VM::VM() {
@@ -50,6 +51,7 @@ VM::VM() {
     m_dispatch[InstructionOpcode::SAR] = [this](const std::vector<InstructionArg>& operands){ exec_SAR(operands); };
     m_dispatch[InstructionOpcode::SHL] = [this](const std::vector<InstructionArg>& operands){ exec_SHL(operands); };
     m_dispatch[InstructionOpcode::SHR] = [this](const std::vector<InstructionArg>& operands){ exec_SHR(operands); };
+    m_dispatch[InstructionOpcode::INT] = [this](const std::vector<InstructionArg>& operands){ exec_INT(operands); };
     m_dispatch[InstructionOpcode::NOP] = [this](const std::vector<InstructionArg>&){ exec_NOP(); };
 };  
 
@@ -57,6 +59,10 @@ void VM::execute(const Instruction& instr) {
     m_program.push_back(instr);
 
     process_instructions();
+}
+
+void VM::set_interrupt_manager(InterruptManager* intr) {
+    m_interrupt_manager = intr;
 }
 
 void VM::process_instructions() {
@@ -196,12 +202,20 @@ void VM::exec_DIV(const std::vector<InstructionArg>& operands) {
     }
 
     RegisterOpcode dst = RegisterOpcode::EAX;
-    auto dst_value = m_registers.get(dst);
+    auto dividend = m_registers.get(dst);
 
-    uint32_t src = get_value(operands[0], 
+    uint32_t divisor = get_value(operands[0], 
         [&](auto why){ Debugger::throw_arg_error(std::string{"DIV: "} + why); });
 
-    m_registers.set(dst, (dst_value / src));
+    if (divisor == 0) {
+        throw std::runtime_error("Division by zero");
+    }
+
+    uint32_t quotient  = dividend / divisor;
+    uint32_t remainder = dividend % divisor;
+
+    m_registers.set(RegisterOpcode::EAX, quotient);
+    m_registers.set(RegisterOpcode::EDX, remainder);
 }
 
 void VM::exec_AND(const std::vector<InstructionArg>& operands) {
@@ -877,4 +891,25 @@ void VM::exec_SHR(const std::vector<InstructionArg>& operands) {
     uint8_t low_byte = result & 0xFF;
     uint8_t bit_count = std::popcount(low_byte);
     m_registers.set_flag(Flag::Parity, (bit_count % 2) == 0);
+}
+
+void VM::exec_INT(const std::vector<InstructionArg>& operands) {
+    if (operands.size() != 1) {
+        throw std::invalid_argument("INT requires 1 operand");
+    }
+
+    if (!std::holds_alternative<int>(operands[0])) {
+        throw std::invalid_argument("INT first operand must be an integer");
+    }    
+
+    int intr = std::get<int>(operands[0]); 
+
+    if (intr == Interrupt::API) {
+        InterruptType t = static_cast<InterruptType>(m_registers.get_AH());
+        m_interrupt_manager->notify(Interrupt(t, m_registers));
+    }
+}
+
+void VM::on_read_char_with_echo(char c) {
+    m_registers.set(RegisterOpcode::AL, (int)c);
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "InterruptManager.h"
 #include "ParseUtils.h"
 #include "Registers.h"
 #include "Debugger.h"
@@ -12,10 +13,10 @@ class VM {
 private:
     Registers m_registers;
     uint32_t m_pc {};
-    uint32_t m_eflags {};
     std::unordered_map<InstructionOpcode, std::function<void(const std::vector<InstructionArg>& operands)>> m_dispatch;
     std::stack<uint32_t> m_program_stack;
     std::vector<Instruction> m_program;
+    InterruptManager* m_interrupt_manager;
 
     template<typename F>
     uint32_t get_value(const InstructionArg& arg, F&& err);    
@@ -23,10 +24,16 @@ private:
 public:
     VM();
     void execute(const Instruction& instr);
+    void set_interrupt_manager(InterruptManager* intr);
+
+    // --- Interruptions ---
+    void on_read_char_with_echo(char c);
+        
 private:
     void step(int step = 1);
     void process_instructions();
 
+    // --- Instructions ---
     void exec_MOV(const std::vector<InstructionArg>& operands);
     void exec_ADD(const std::vector<InstructionArg>& operands);
     void exec_SUB(const std::vector<InstructionArg>& operands); 
@@ -76,5 +83,6 @@ private:
     void exec_SAR(const std::vector<InstructionArg>& operands);
     void exec_SHL(const std::vector<InstructionArg>& operands);
     void exec_SHR(const std::vector<InstructionArg>& operands);
+    void exec_INT(const std::vector<InstructionArg>& operands);
     void exec_NOP() {}
 };
