@@ -910,6 +910,13 @@ void VM::exec_INT(const std::vector<InstructionArg>& operands) {
     }
 }
 
-void VM::on_read_char_with_echo(char c) {
+void VM::on_read_char(char c) {
     m_registers.set(RegisterOpcode::AL, (int)c);
+}
+
+void VM::on_get_system_date(int year, int month, int day, int day_of_week) {
+    m_registers.set(RegisterOpcode::CX, year);
+    m_registers.set(RegisterOpcode::DH, month);
+    m_registers.set(RegisterOpcode::DL, day);
+    m_registers.set(RegisterOpcode::AL, day_of_week);
 }

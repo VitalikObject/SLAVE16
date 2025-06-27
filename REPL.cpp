@@ -1,11 +1,14 @@
 #include "REPL.h"
 #include <iostream>
+#include "TimeUtils.h"
 
 REPL::REPL() {
     m_interrupt_manager.register_handler(*this);
 
     m_dispatch[InterruptType::ReadCharWithEcho] = [this](const Registers& reg){ intr_read_char_with_echo(reg); };
     m_dispatch[InterruptType::WriteChar] = [this](const Registers& reg){ intr_write_char(reg); };
+    m_dispatch[InterruptType::ReadCharNoEcho] = [this](const Registers& reg){ intr_read_char_no_echo(reg); };
+    m_dispatch[InterruptType::GetSystemDate] = [this](const Registers& reg){ intr_get_system_date(reg); };
 }
 
 REPL::~REPL() {
@@ -86,12 +89,32 @@ void REPL::intr_read_char_with_echo(const Registers&) {
     char ch;
     std::cin.get(ch);       
     std::cin.get();
+    std::cout << ch << std::endl;
 
-    m_vm.on_read_char_with_echo(ch);
+    m_vm.on_read_char(ch);
 }
 
 void REPL::intr_write_char(const Registers& reg) {
     char ch = reg.get(RegisterOpcode::DL);
 
     std::cout << ch << std::endl;
+}
+
+void REPL::intr_read_char_no_echo(const Registers&) {
+    std::cout << ">> ";
+
+    char ch;
+    std::cin.get(ch);       
+    std::cin.get();
+
+    m_vm.on_read_char(ch);
+}
+
+void REPL::intr_get_system_date(const Registers&) {
+    m_vm.on_get_system_date(
+        TimeUtils::get_current_year(),
+        TimeUtils::get_current_month(),
+        TimeUtils::get_current_day(),
+        TimeUtils::get_current_day_of_week()
+    );
 }

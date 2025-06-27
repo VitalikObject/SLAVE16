@@ -26,4 +26,7 @@ private:
 
     void intr_read_char_with_echo(const Registers&);
     void intr_write_char(const Registers& reg);
+    void intr_read_char_no_echo(const Registers&);
+
+    void intr_get_system_date(const Registers&);
 };

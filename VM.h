@@ -27,7 +27,8 @@ public:
     void set_interrupt_manager(InterruptManager* intr);
 
     // --- Interruptions ---
-    void on_read_char_with_echo(char c);
+    void on_read_char(char c);
+    void on_get_system_date(int year, int month, int day, int day_of_week);
         
 private:
     void step(int step = 1);

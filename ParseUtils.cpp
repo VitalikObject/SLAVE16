@@ -1,26 +1,52 @@
 #include "ParseUtils.h"
 
+#include <string>
+#include <algorithm>
+#include <cctype>
+
 bool ParseUtils::is_int(const std::string& str) {
-    if (str.empty()) return false;
+    if (str.empty()) 
+        return false;
 
     size_t start = 0;
+
     if (str[0] == '-' || str[0] == '+') {
         start = 1;
-        if (start == str.size()) return false; 
+        if (start == str.size()) 
+            return false; 
     }
 
     size_t end = str.size();
-    char suf = std::tolower(str.back());
-    if ((suf == 'h' || suf == 'd') && end - start > 1) {
+    bool isHex = false;
+    char suf = std::tolower(static_cast<unsigned char>(str.back()));
+
+    if (suf == 'h' && end - start > 1) {
+        isHex = true;
+        --end;
+    }
+    else if (suf == 'd' && end - start > 1) {
         --end;
     }
 
-    return std::all_of(
-        str.begin() + start,
-        str.begin() + end,
-        [](char c){ return std::isdigit(static_cast<unsigned char>(c)); }
-    );
+    if (isHex) {
+        return std::all_of(
+            str.begin() + start,
+            str.begin() + end,
+            [](char c) {
+                return std::isxdigit(static_cast<unsigned char>(c));
+            }
+        );
+    } else {
+        return std::all_of(
+            str.begin() + start,
+            str.begin() + end,
+            [](char c) {
+                return std::isdigit(static_cast<unsigned char>(c));
+            }
+        );
+    }
 }
+
 
 bool ParseUtils::is_double(const std::string& str) {
     if (str.empty()) return false;
